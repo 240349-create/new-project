@@ -2,16 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BaaS / Reactive App</title>
+    <title>BaaS / Reactive App - Extended</title>
     <style>
-        /* Стили из твоей методички [cite: 851-859] */
+        /* Стили из твоей методички */
         body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px; background-color: #f8f9fa; }
         .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-bottom: 20px;}
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #007bff; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 8px; }
         .post { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #eee; width: 500px; position: relative; }
         .time { font-size: 11px; color: #999; float: right; }
-        .like-btn { background: #f0f0f0; color: #333; width: auto; padding: 5px 15px; margin-top: 10px; font-size: 13px; }
+        
+        /* Стили для новых кнопок реакций */
+        .like-btn { background: #f0f0f0; color: #333; width: auto; padding: 5px 15px; margin-top: 10px; font-size: 13px; margin-right: 5px; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .like-btn:hover { background: #e0e0e0; }
+        .dislike-btn { background: #ffebee; color: #c62828; }
+        .verify-btn { background: #e8f5e9; color: #2e7d32; }
     </style>
 </head>
 <body>
@@ -25,7 +30,9 @@
     </form>
 </div>
 
-<div id="feed"></div> <script type="module">
+<div id="feed"></div>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
@@ -41,15 +48,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Функция для лайков [cite: 913, 918]
-    window.processLike = async (docId) => {
-        const docRef = doc(db, "requests", docId);
-        await updateDoc(docRef, {
-            likes: increment(1)
-        });
+    // УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ РЕАКЦИЙ (Лайк, Дизлайк, Галочка)
+    // Мы передаем имя поля ('likes', 'dislikes' или 'verified')
+    window.processAction = async (docId, field) => {
+        try {
+            const docRef = doc(db, "requests", docId);
+            await updateDoc(docRef, {
+                [field]: increment(1)
+            });
+        } catch (e) {
+            console.error("Ошибка обновления:", e);
+        }
     };
 
-    // Отправка данных [cite: 957, 976]
+    // Отправка данных
     document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const btn = document.getElementById("submitBtn");
@@ -60,6 +72,8 @@
                 name: document.getElementById("userName").value,
                 email: document.getElementById("userEmail").value,
                 likes: 0,
+                dislikes: 0, // Новая функция: инициализация дизлайков
+                verified: 0,  // Новая функция: инициализация галочек
                 timestamp: serverTimestamp()
             });
             document.getElementById("feedbackForm").reset();
@@ -70,11 +84,11 @@
         }
     });
 
-    // Real-time лента (то, что у тебя не работало) [cite: 980-988]
+    // Real-time лента
     const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
     onSnapshot(q, (snapshot) => {
         const feedContainer = document.getElementById("feed");
-        feedContainer.innerHTML = ""; // Очистка ленты перед отрисовкой
+        feedContainer.innerHTML = "";
         
         snapshot.forEach((doc) => {
             const data = doc.data();
@@ -85,8 +99,17 @@
                     <span class="time">${time}</span>
                     <p><b>${data.name}</b></p>
                     <p>${data.email}</p>
-                    <button class="like-btn" onclick="processLike('${doc.id}')">
+                    
+                    <button class="like-btn" onclick="processAction('${doc.id}', 'likes')">
                         👍 ${data.likes || 0}
+                    </button>
+                    
+                    <button class="like-btn dislike-btn" onclick="processAction('${doc.id}', 'dislikes')">
+                        👎 ${data.dislikes || 0}
+                    </button>
+                    
+                    <button class="like-btn verify-btn" onclick="processAction('${doc.id}', 'verified')">
+                        ✅ ${data.verified || 0}
                     </button>
                 </div>
             `;
