@@ -2,25 +2,26 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BaaS / Reactive App - DM System</title>
+    <title>BaaS / Reactive App - Final DM</title>
     <style>
         body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px; background-color: #f8f9fa; }
         .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-bottom: 20px;}
         input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #007bff; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 8px; }
-        .post { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #eee; width: 500px; position: relative; cursor: pointer; transition: 0.2s; }
-        .post:hover { border-color: #007bff; }
+        .post { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #eee; width: 500px; position: relative; cursor: pointer; }
         .time { font-size: 11px; color: #999; float: right; }
         
+        /* Кнопки реакций */
         .like-btn { background: #f0f0f0; color: #333; width: auto; padding: 5px 15px; margin-top: 10px; font-size: 13px; margin-right: 5px; border: none; border-radius: 5px; cursor: pointer; }
         .dislike-btn { background: #ffebee; color: #c62828; }
         .verify-btn { background: #e8f5e9; color: #2e7d32; }
 
+        /* Авторизация */
         .auth-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 500px; box-sizing: border-box;}
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #007bff; }
         .logout-btn { background: #ff4757; width: auto; padding: 8px 15px; font-size: 12px; }
 
-        /* СТИЛИ ЧАТА */
+        /* ОКНО ЧАТА */
         #chatWindow { position: fixed; bottom: 20px; right: 20px; width: 350px; height: 450px; background: white; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: none; flex-direction: column; border: 1px solid #ddd; z-index: 1000; }
         #chatHeader { padding: 15px; background: #007bff; color: white; border-radius: 15px 15px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         #chatMessages { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; }
@@ -59,7 +60,7 @@
     </div>
     <div id="chatMessages"></div>
     <form id="chatInputArea">
-        <input type="text" id="chatMsgInput" placeholder="Сообщение..." required autocomplete="off">
+        <input type="text" id="chatMsgInput" placeholder="Написать сообщение..." required autocomplete="off">
         <button type="submit" style="width: 40px; padding: 0; border-radius: 50%;">➔</button>
     </form>
 </div>
@@ -69,13 +70,14 @@
     import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-    const firebaseConfig = { 
-      apiKey: "AIzaSyBQPOi6fkk4UH64785hTqpgDqAW_NYMTZ4", 
-      authDomain: "new-project-addf2.firebaseapp.com", 
-      projectId: "new-project-addf2", 
-      storageBucket: "new-project-addf2.firebasestorage.app", 
-      messagingSenderId: "1013363206844", 
-      appId: "1:1013363206844:web:f5f47e1ff0fadeaefc3eb9"
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQPOi6fkk4UH64785hTqpgDqAW_NYMTZ4",
+        authDomain: "new-project-addf2.firebaseapp.com",
+        projectId: "new-project-addf2",
+        storageBucket: "new-project-addf2.firebasestorage.app",
+        messagingSenderId: "1013363206844",
+        appId: "1:1013363206844:web:f5f47e1ff0fadeaefc3eb9",
+        measurementId: "G-P0QPFZ1VSR"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -86,8 +88,8 @@
     let currentReceiverId = null;
     let chatUnsubscribe = null;
 
-    // Ключ для уникального чата между двумя пользователями
-    const getChatKey = (uid1, uid2) => [uid1, uid2].sort().join('_');
+    // Уникальный ключ для пары собеседников
+    const getChatKey = (u1, u2) => [u1, u2].sort().join('_');
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -109,25 +111,26 @@
     loginBtn.onclick = () => signInWithPopup(auth, provider);
     logoutBtn.onclick = () => signOut(auth);
 
-    // Функция открытия чата
-    window.openChat = (receiverId, receiverName) => {
-        if (!auth.currentUser) return alert("Войдите, чтобы писать ЛС");
-        if (receiverId === auth.currentUser.uid) return; // Нельзя писать самому себе
+    // Функция Лайков (основная логика)
+    window.processAction = async (docId, field) => {
+        try {
+            await updateDoc(doc(db, "requests", docId), { [field]: increment(1) });
+        } catch (e) { console.error("Ошибка:", e); }
+    };
 
-        currentReceiverId = receiverId;
-        document.getElementById('chatWith').innerText = receiverName;
+    // ОТКРЫТИЕ ЧАТА (при клике на пост)
+    window.openChat = (uid, name) => {
+        if (!auth.currentUser || uid === auth.currentUser.uid) return;
+        currentReceiverId = uid;
+        document.getElementById('chatWith').innerText = name;
         document.getElementById('chatWindow').style.display = "flex";
 
         if (chatUnsubscribe) chatUnsubscribe();
-
-        const chatKey = getChatKey(auth.currentUser.uid, receiverId);
-        const qChat = query(
-            collection(db, "direct_messages"), 
-            where("chatKey", "==", chatKey), 
-            orderBy("timestamp", "asc")
-        );
-
-        chatUnsubscribe = onSnapshot(qChat, (snap) => {
+        
+        const key = getChatKey(auth.currentUser.uid, uid);
+        const q = query(collection(db, "direct_messages"), where("chatKey", "==", key), orderBy("timestamp", "asc"));
+        
+        chatUnsubscribe = onSnapshot(q, (snap) => {
             const box = document.getElementById('chatMessages');
             box.innerHTML = "";
             snap.forEach(m => {
@@ -141,51 +144,45 @@
         });
     };
 
-    // Отправка ЛС
+    // ОТПРАВКА СООБЩЕНИЯ
     document.getElementById('chatInputArea').onsubmit = async (e) => {
         e.preventDefault();
-        const input = document.getElementById('chatMsgInput');
-        if (!input.value.trim() || !currentReceiverId) return;
+        const inp = document.getElementById('chatMsgInput');
+        if (!inp.value.trim()) return;
 
         await addDoc(collection(db, "direct_messages"), {
             chatKey: getChatKey(auth.currentUser.uid, currentReceiverId),
             senderId: auth.currentUser.uid,
             receiverId: currentReceiverId,
-            text: input.value,
+            text: inp.value,
             timestamp: serverTimestamp()
         });
-        input.value = "";
+        inp.value = "";
     };
 
     document.getElementById('closeChat').onclick = () => document.getElementById('chatWindow').style.display = "none";
 
-    // Общая логика лайков
-    window.processAction = async (docId, field) => {
-        try {
-            const docRef = doc(db, "requests", docId);
-            await updateDoc(docRef, { [field]: increment(1) });
-        } catch (e) { console.error(e); }
-    };
-
-    // Отправка в ленту
+    // ПУБЛИКАЦИЯ В ЛЕНТУ
     document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
         e.preventDefault();
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true;
         try {
             await addDoc(collection(db, "requests"), {
                 name: auth.currentUser.displayName,
                 email: auth.currentUser.email,
                 photo: auth.currentUser.photoURL,
-                uid: auth.currentUser.uid, // ОБЯЗАТЕЛЬНО для работы ЛС
+                uid: auth.currentUser.uid, // Важно для ЛС
                 likes: 0, dislikes: 0, verified: 0,
                 timestamp: serverTimestamp()
             });
             document.getElementById("feedbackForm").reset();
-        } catch (e) { alert("Ошибка!"); }
+        } catch (e) { alert("Доступ запрещен!"); }
+        finally { btn.disabled = false; }
     });
 
-    // Рендеринг ленты
-    const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
-    onSnapshot(q, (snapshot) => {
+    // ОТОБРАЖЕНИЕ ЛЕНТЫ
+    onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snapshot) => {
         const feedContainer = document.getElementById("feed");
         feedContainer.innerHTML = "";
         snapshot.forEach((doc) => {
@@ -193,18 +190,16 @@
             const time = data.timestamp ? data.timestamp.toDate().toLocaleTimeString() : "...";
             const post = document.createElement('div');
             post.className = 'post';
-            // Клик на пост открывает чат (кроме кнопок лайков)
-            post.onclick = (e) => {
-                if (e.target.tagName !== 'BUTTON') openChat(data.uid, data.name);
-            };
+            // Если клик не по кнопке — открываем чат
+            post.onclick = (e) => { if (e.target.tagName !== 'BUTTON') openChat(data.uid, data.name); };
             post.innerHTML = `
                 <span class="time">${time}</span>
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <img src="${data.photo || 'https://via.placeholder.com/30'}" style="width:30px; border-radius:50%;">
+                    <img src="${data.photo || ''}" style="width:30px; border-radius:50%;">
                     <b>${data.name}</b>
                 </div>
                 <p style="font-size: 14px; color: #666; margin-bottom: 5px;">${data.email}</p>
-                <small style="color: #007bff;">Нажми, чтобы написать ЛС</small><br>
+                <small style="color: #007bff;">Нажми на пост, чтобы написать ЛС</small><br>
                 <button class="like-btn" onclick="processAction('${doc.id}', 'likes')">👍 ${data.likes || 0}</button>
                 <button class="like-btn dislike-btn" onclick="processAction('${doc.id}', 'dislikes')">👎 ${data.dislikes || 0}</button>
                 <button class="like-btn verify-btn" onclick="processAction('${doc.id}', 'verified')">✅ ${data.verified || 0}</button>
