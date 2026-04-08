@@ -2,32 +2,31 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BaaS - MyCloudApp Final</title>
+    <title>BaaS - MyCloudApp</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .auth-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; max-width: 500px; box-sizing: border-box; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #007bff; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d0d0d0; border-radius: 8px; box-sizing: border-box; }
         button#mainBtn, button#loginBtn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; }
         .logout-btn { background: #ff4757 !important; padding: 8px 15px !important; width: auto !important; font-size: 14px; margin-left: auto; }
-        
-        .post { background: #fff; border: 1px solid #eeeeee; padding: 15px; margin-top: 15px; border-radius: 8px; width: 100%; max-width: 500px; box-sizing: border-box; }
+        .post { background: #fff; border: 1px solid #eeeeee; padding: 15px; margin-top: 15px; border-radius: 8px; width: 100%; max-width: 500px; position: relative; }
         .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .post-avatar { width: 30px; height: 30px; border-radius: 50%; }
-        .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 14px; margin-right: 5px; transition: 0.2s; }
-        .like-btn:hover { background: #e9ecef; }
+        .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 14px; margin-right: 5px; }
         .time { font-size: 11px; color: #999; margin-left: auto; }
-
-        /* Блок ЛС из твоего кода */
-        .dm-user-list { max-height: 200px; overflow-y: auto; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 12px; }
+        .dm-user-list { max-height: 220px; overflow-y: auto; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 12px; }
         .dm-user-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f1f1f1; cursor: pointer; }
         .dm-user-item:hover { background: #f8f9fa; }
-        .dm-user-item.active { background: #eaf3ff; border-left: 4px solid #007bff; }
-        .dm-chat-box { height: 300px; overflow-y: auto; border: 1px solid #eeeeee; border-radius: 8px; padding: 12px; background: #fafafa; margin-bottom: 12px; display: flex; flex-direction: column; }
-        .dm-message { max-width: 80%; padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 14px; }
-        .dm-message.me { align-self: flex-end; background: #007bff; color: white; }
-        .dm-message.other { align-self: flex-start; background: #eee; color: #333; }
+        .dm-user-item.active { background: #eaf3ff; }
+        .dm-user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+        .dm-chat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #eeeeee; }
+        .dm-chat-box { height: 320px; overflow-y: auto; border: 1px solid #eeeeee; border-radius: 8px; padding: 12px; background: #fafafa; margin-bottom: 12px; }
+        .dm-message { max-width: 75%; padding: 10px 12px; border-radius: 14px; margin-bottom: 10px; word-break: break-word; display: block; }
+        .dm-message.me { margin-left: auto; background: #007bff; color: white; border-bottom-right-radius: 4px; }
+        .dm-message.other { margin-right: auto; background: #ececec; color: #111; border-bottom-left-radius: 4px; }
+        .dm-message-time { display: block; font-size: 10px; opacity: 0.7; margin-top: 5px; }
         .dm-send-row { display: flex; gap: 8px; }
     </style>
 </head>
@@ -38,41 +37,42 @@
 </div>
 
 <div id="userInfo" class="auth-bar" style="display: none;">
-    <img id="userPhoto" class="user-avatar" src="">
-    <span id="userNameDisplay" style="font-weight: bold;"></span>
+    <img id="userPhoto" class="user-avatar" src="" alt="Avatar">
+    <span id="userName" style="font-weight: bold;"></span>
     <button id="logoutBtn" class="like-btn logout-btn">Выйти</button>
 </div>
 
 <div id="messageForm" class="container" style="display: none;">
-    <h3>Панель управления</h3>
-    <input type="text" id="name" placeholder="Имя" readonly>
-    <input type="email" id="email" placeholder="Email" readonly>
+    <h3>Панель управления данными</h3>
+    <input type="text" id="name" placeholder="Имя профиля" readonly>
+    <input type="email" id="email" placeholder="Рабочий Email" readonly>
     <input type="text" id="content" placeholder="Ваше сообщение...">
-    <button id="mainBtn">Опубликовать</button>
+    <button id="mainBtn">Опубликовать в облако</button>
 </div>
 
 <div id="dmBlock" class="container" style="display: none;">
     <h3>Личные сообщения (DM)</h3>
-    <div id="dmUsers" class="dm-user-list"></div>
-
-    <div id="dmChatSection" style="display: none;">
-        <div id="dmChatHeader" style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;"></div>
+    <div>
+        <div style="font-weight: 600; margin-bottom: 8px;">Выберите собеседника:</div>
+        <div id="dmUsers" class="dm-user-list"></div>
+    </div>
+    <div id="dmChatSection" style="display: none; margin-top: 15px;">
+        <div id="dmChatHeader" class="dm-chat-header"></div>
         <div id="dmMessages" class="dm-chat-box"></div>
         <div class="dm-send-row">
-            <input type="text" id="dmText" placeholder="Напишите сообщение...">
-            <button id="dmSendBtn" style="width: auto; background: #007bff; color: white; border: none; border-radius: 8px; padding: 0 20px;">➔</button>
+            <input type="text" id="dmText" placeholder="Ваше сообщение...">
+            <button id="dmSendBtn">Отправить</button>
         </div>
     </div>
 </div>
 
-<div id="feed"></div>
+<div id="feed" style="width: 100%; max-width: 500px;"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-// КОНФИГ ОДНОГРУППНИКА
 const firebaseConfig = {
     apiKey: "AIzaSyBQPOi6fkk4UH64785hTqpgDqAW_NYMTZ4",
     authDomain: "new-project-addf2.firebaseapp.com",
@@ -87,133 +87,135 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const authBlock = document.getElementById('authBlock');
+const userInfo = document.getElementById('userInfo');
+const messageForm = document.getElementById('messageForm');
+const dmBlock = document.getElementById('dmBlock');
+const dmUsers = document.getElementById('dmUsers');
+const dmChatSection = document.getElementById('dmChatSection');
+const dmChatHeader = document.getElementById('dmChatHeader');
+const dmMessages = document.getElementById('dmMessages');
+const dmText = document.getElementById('dmText');
+const dmSendBtn = document.getElementById('dmSendBtn');
+
 let selectedUser = null;
 let currentChatId = null;
-let unsubMessages = null;
-
-onAuthStateChanged(auth, async (user) => {
-    authBlock.style.display = user ? "none" : "block";
-    userInfo.style.display = user ? "flex" : "none";
-    messageForm.style.display = user ? "block" : "none";
-    dmBlock.style.display = user ? "block" : "none";
-
-    if (user) {
-        document.getElementById("userNameDisplay").innerText = user.displayName;
-        document.getElementById("userPhoto").src = user.photoURL;
-        document.getElementById("name").value = user.displayName;
-        document.getElementById("email").value = user.email;
-
-        // Регистрируем юзера в базе для ЛС
-        await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL
-        }, { merge: true });
-
-        loadUsers();
-    }
-});
+let unsubscribeDMUsers = null;
+let unsubscribeDMMessages = null;
 
 loginBtn.onclick = () => signInWithPopup(auth, provider);
 logoutBtn.onclick = () => signOut(auth);
 
-// ФУНКЦИИ ЛЕНТЫ (Лайки, Дизлайки, Верификация)
-window.processAction = async (id, field) => {
-    try {
-        await updateDoc(doc(db, "requests", id), { [field]: increment(1) });
-    } catch (e) { console.error("Ошибка обновления:", e); }
-};
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        authBlock.style.display = "none";
+        userInfo.style.display = "flex";
+        messageForm.style.display = "block";
+        dmBlock.style.display = "block";
+        document.getElementById("userName").innerText = user.displayName;
+        document.getElementById("userPhoto").src = user.photoURL;
+        document.getElementById("name").value = user.displayName;
+        document.getElementById("email").value = user.email;
+
+        await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL, createdAt: serverTimestamp()
+        }, { merge: true });
+
+        subscribeToDMUsers();
+    } else {
+        authBlock.style.display = "block";
+        userInfo.style.display = "none";
+        messageForm.style.display = "none";
+        dmBlock.style.display = "none";
+    }
+});
+
+window.processLike = (id) => updateDoc(doc(db, "requests", id), { likes: increment(1) });
+window.processDislike = (id) => updateDoc(doc(db, "requests", id), { dislikes: increment(1) });
 
 document.getElementById("mainBtn").onclick = async () => {
-    const text = document.getElementById("content").value.trim();
-    if (!text) return;
+    const content = document.getElementById("content").value.trim();
+    if (!content) return alert("Введите сообщение!");
     await addDoc(collection(db, "requests"), {
         name: auth.currentUser.displayName,
         email: auth.currentUser.email,
         photo: auth.currentUser.photoURL,
-        text: text,
-        likes: 0, dislikes: 0, verified: 0,
-        timestamp: serverTimestamp()
+        text: content,
+        likes: 0, dislikes: 0, timestamp: serverTimestamp()
     });
     document.getElementById("content").value = "";
 };
 
-// ОБНОВЛЕНИЕ ЛЕНТЫ
-onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
+onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snapshot) => {
     const feed = document.getElementById("feed");
     feed.innerHTML = "";
-    snap.forEach(d => {
-        const res = d.data();
+    snapshot.forEach((docItem) => {
+        const data = docItem.data();
         feed.innerHTML += `
             <div class="post">
                 <div class="post-header">
-                    <img src="${res.photo}" class="post-avatar">
-                    <b>${res.name}</b>
-                    <span class="time">${res.timestamp?.toDate().toLocaleTimeString() || ''}</span>
+                    <img src="${data.photo || ''}" class="post-avatar">
+                    <b>${data.name}</b>
+                    <span class="time">${data.timestamp?.toDate().toLocaleTimeString() || ''}</span>
                 </div>
-                <p>${res.text}</p>
-                <button class="like-btn" onclick="processAction('${d.id}', 'likes')">👍 ${res.likes || 0}</button>
-                <button class="like-btn" onclick="processAction('${d.id}', 'dislikes')">👎 ${res.dislikes || 0}</button>
-                <button class="like-btn" onclick="processAction('${d.id}', 'verified')">✅ ${res.verified || 0}</button>
+                <p>${data.text}</p>
+                <button class="like-btn" onclick="processLike('${docItem.id}')">👍 ${data.likes ?? 0}</button>
+                <button class="like-btn" onclick="processDislike('${docItem.id}')">👎 ${data.dislikes ?? 0}</button>
             </div>`;
     });
 });
 
-// ТВОЯ ЛОГИКА ЛС
-function loadUsers() {
-    onSnapshot(collection(db, "users"), (snap) => {
-        const list = document.getElementById("dmUsers");
-        list.innerHTML = "";
-        snap.forEach(u => {
-            const userData = u.data();
-            if (userData.uid === auth.currentUser.uid) return;
-            const div = document.createElement("div");
-            div.className = `dm-user-item ${selectedUser?.uid === userData.uid ? 'active' : ''}`;
-            div.innerHTML = `<img src="${userData.photoURL}" class="user-avatar" style="width:30px; height:30px"> 
-                             <div><b>${userData.displayName}</b><br><small>${userData.email}</small></div>`;
-            div.onclick = () => openChat(userData);
-            list.appendChild(div);
+function subscribeToDMUsers() {
+    onSnapshot(collection(db, "users"), (snapshot) => {
+        dmUsers.innerHTML = "";
+        snapshot.forEach((docItem) => {
+            const data = docItem.data();
+            if (data.uid !== auth.currentUser.uid) {
+                const item = document.createElement("div");
+                item.className = "dm-user-item";
+                item.innerHTML = `<img src="${data.photoURL}" class="dm-user-avatar"> <b>${data.displayName}</b>`;
+                item.onclick = () => {
+                    selectedUser = data;
+                    openDMChat(data);
+                };
+                dmUsers.appendChild(item);
+            }
         });
     });
 }
 
-async function openChat(user) {
-    selectedUser = user;
+async function openDMChat(otherUser) {
     dmChatSection.style.display = "block";
-    document.getElementById("dmChatHeader").innerText = "Чат с: " + user.displayName;
-    currentChatId = [auth.currentUser.uid, user.uid].sort().join("_");
+    dmChatHeader.innerHTML = `<b>Чат с ${otherUser.displayName}</b>`;
+    currentChatId = [auth.currentUser.uid, otherUser.uid].sort().join("_");
 
-    if (unsubMessages) unsubMessages();
+    if (unsubscribeDMMessages) unsubscribeDMMessages();
     const qMsg = query(collection(db, "chats", currentChatId, "messages"), orderBy("createdAt", "asc"));
-    unsubMessages = onSnapshot(qMsg, (snap) => {
-        const box = document.getElementById("dmMessages");
-        box.innerHTML = "";
+    unsubscribeDMMessages = onSnapshot(qMsg, (snap) => {
+        dmMessages.innerHTML = "";
         snap.forEach(m => {
-            const msg = m.data();
-            const div = document.createElement("div");
-            div.className = `msg dm-message ${msg.senderId === auth.currentUser.uid ? 'me' : 'other'}`;
-            div.innerText = msg.text;
-            box.appendChild(div);
+            const d = m.data();
+            const msg = document.createElement("div");
+            msg.className = `dm-message ${d.senderId === auth.currentUser.uid ? 'me' : 'other'}`;
+            msg.innerText = d.text;
+            dmMessages.appendChild(msg);
         });
-        box.scrollTop = box.scrollHeight;
+        dmMessages.scrollTop = dmMessages.scrollHeight;
     });
 }
 
-document.getElementById("dmSendBtn").onclick = async () => {
-    const inp = document.getElementById("dmText");
-    if (!inp.value.trim()) return;
-    const text = inp.value;
-    inp.value = "";
-    
+dmSendBtn.onclick = async () => {
+    const text = dmText.value.trim();
+    if (!text || !currentChatId) return;
     await addDoc(collection(db, "chats", currentChatId, "messages"), {
-        text: text,
-        senderId: auth.currentUser.uid,
-        createdAt: serverTimestamp()
+        text: text, senderId: auth.currentUser.uid, createdAt: serverTimestamp()
     });
-
     await setDoc(doc(db, "chats", currentChatId), {
-        lastMessage: text,
-        members: [auth.currentUser.uid, selectedUser.uid],
-        lastMessageAt: serverTimestamp()
+        members: [auth.currentUser.uid, selectedUser.uid], lastMessageAt: serverTimestamp()
     }, { merge: true });
+    dmText.value = "";
 };
 </script>
 </body>
