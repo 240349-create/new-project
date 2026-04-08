@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Мой облачный проект</title>
     <style>
-        /* Стили из этапа IV [cite: 50, 53, 54] */
+        /* Стили из методички */
         body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background-color: #f4f4f4; }
         .form-container { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px; }
         input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
@@ -24,25 +24,26 @@
 </div>
 
 <script type="module">
-    // Импорт модулей Firebase [cite: 88, 90]
+    // Используем CDN импорты из методички для работы в браузере [cite: 88, 90]
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-    // Твои ключи конфигурации из документа [cite: 94, 99-104]
-    const firebaseConfig = {
-        apiKey: "Alza5y06178b_0y5vb07gTr4130hLESSbuYQ",
-        authDomain: "enter-65457.firebaseapp.com",
-        projectId: "enter-65457",
-        storageBucket: "enter-65457.firebasestorage.app",
-        messagingSenderId: "672982968171",
-        appId: "1:672982968171:web:c2364626880751e7f4a6"
+    // ТВОИ НОВЫЕ КЛЮЧИ:
+    const firebaseConfig = { 
+      apiKey: "AIzaSyBQPOi6fkk4UH64785hTqpgDqAW_NYMTZ4", 
+      authDomain: "new-project-addf2.firebaseapp.com", 
+      projectId: "new-project-addf2", 
+      storageBucket: "new-project-addf2.firebasestorage.app", 
+      messagingSenderId: "1013363206844", 
+      appId: "1:1013363206844:web:f5f47e1ff0fadeaefc3eb9", 
+      measurementId: "G-P0QPFZ1VSR" 
     };
 
-    // Инициализация Firebase и Firestore [cite: 107, 109]
+    // Инициализация (как в методичке) [cite: 106, 107, 109]
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Логика обработки формы [cite: 151-178]
+    // Логика отправки данных [cite: 151-178]
     document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -50,7 +51,7 @@
         const emailInput = document.getElementById("userEmail").value;
 
         try {
-            // Запись данных в коллекцию "requests" [cite: 160, 187]
+            // Запись в коллекцию "requests" [cite: 123, 124, 160]
             await addDoc(collection(db, "requests"), {
                 name: nameInput,
                 email: emailInput,
